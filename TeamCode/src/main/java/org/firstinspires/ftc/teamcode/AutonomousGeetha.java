@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import com.pedropathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 import java.util.Base64;
 import java.util.List;
@@ -30,6 +32,8 @@ public class AutonomousGeetha extends LinearOpMode {
     private DcMotor backRightMotor;
     private Servo flowerServo1;
     private Servo flowerServo2;
+
+
 
     @Override
     public void runOpMode() {

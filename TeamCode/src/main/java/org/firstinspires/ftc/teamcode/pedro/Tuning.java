@@ -1,4 +1,4 @@
-/* package org.firstinspires.ftc.teamcode.pedro;
+package org.firstinspires.ftc.teamcode.pedro;
 
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.tuning.autotune.Procedure;
@@ -18,14 +18,6 @@ public class Tuning {
         return new MecanumTuner();
     }
 
-    //Automatic pinpoint tuning
-    //https://pedropathing.com/docs/pathing/tuning/localization/pinpoint
-
-    @Tuner
-    public static Procedure pinpointTuner() {
-        return new PinpointTuner();
-    }
-
     //for two wheel
     //https://pedropathing.com/docs/pathing/tuning/localization/two-wheel
 
@@ -34,11 +26,10 @@ public class Tuning {
         return new TwoWheelTuner();
     }
 
-    //Automatic Foresight Tuning (LAST)
+    /*//Automatic Foresight Tuning (LAST)
     //https://pedropathing.com/docs/pathing/tuning/foresight
     @Tuner
     public static Procedure foresightTuner() {
         return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig), (hardwareMap) -> new Mecanum(hardwareMap, Constants.drivetrainConfig));
-    }
+    }*/
 }
-*/
