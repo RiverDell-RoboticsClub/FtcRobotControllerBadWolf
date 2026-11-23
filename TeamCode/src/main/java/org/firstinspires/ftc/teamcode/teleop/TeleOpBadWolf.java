@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 //hlo
 import static org.firstinspires.ftc.teamcode.MyTeamUtil.drive;
+import static org.firstinspires.ftc.teamcode.MyTeamUtil.intake;
 import static org.firstinspires.ftc.teamcode.MyTeamUtil.move_servos;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,7 +26,7 @@ public class TeleOpBadWolf extends LinearOpMode {
     private DcMotor backLeftMotor;
     private DcMotor frontRightMotor;
     private DcMotor backRightMotor;
-    private DcMotor intakeMotor;
+    private DcMotorEx intakeMotor;
     private Servo flowerServo1;
     //hello
     private Servo flowerServo2;
@@ -35,12 +36,11 @@ public class TeleOpBadWolf extends LinearOpMode {
     private Servo pollenGate;
     private Servo nectarHood;
     private Servo pollenHood;
-    private DcMotor transferMotor;
+    private DcMotorEx transferMotor;
 
 
     private boolean currentAButton = false;
-    private boolean intake_yes = false;
-    private boolean reverse_intake_yes = false;
+    private boolean lastAButton = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -50,7 +50,7 @@ public class TeleOpBadWolf extends LinearOpMode {
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRight");
         backRightMotor = hardwareMap.get(DcMotor.class, "backRight");
 
-        intakeMotor = hardwareMap.get(DcMotor.class, "intake");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
 
         flowerServo1 = hardwareMap.get(Servo.class, "flower_servo_1");
         flowerServo2 = hardwareMap.get(Servo.class, "flower_servo_2");
@@ -61,7 +61,7 @@ public class TeleOpBadWolf extends LinearOpMode {
         nectarHood = hardwareMap.get(Servo.class, "nectarHood");
         pollenHood = hardwareMap.get(Servo.class, "nectarHood");
 
-        transferMotor = hardwareMap.get(DcMotor.class, "transferMotor");
+        transferMotor = hardwareMap.get(DcMotorEx.class, "transferMotor");
 
         nectarFlywheel = hardwareMap.get(DcMotorEx.class, "flywheel_motor_nectar");
         pollenFlywheel = hardwareMap.get(DcMotorEx.class, "flywheel_motor_pollen");
@@ -77,7 +77,7 @@ public class TeleOpBadWolf extends LinearOpMode {
         nectarFlywheel.setDirection(DcMotorEx.Direction.REVERSE);
 
         //This is setting the directions for the spinning of the motors (the reverse is because of some weird meca wheel stuff)
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -98,42 +98,43 @@ public class TeleOpBadWolf extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
+
             double vertical_value = -gamepad1.left_stick_y;
             double horizontal_value = gamepad1.left_stick_x;
             double spin_amount = gamepad1.right_stick_x;
 
             drive(horizontal_value, vertical_value, spin_amount, wheel_motors);
 
-            boolean lastAButton = currentAButton;
+            lastAButton = currentAButton;
             currentAButton = gamepad1.a;
 
-            if (gamepad1.right_trigger_pressed) {
-                intake_yes = true;
-                intakeMotor.setPower(1);
-                transferMotor.setPower(1);
-            } else if (!gamepad1.right_trigger_pressed) {
-                if (reverse_intake_yes == false) {
-                    intakeMotor.setPower(0);
-                }
-                transferMotor.setPower(0);
+            
+            if (gamepad1.right_trigger_pressed && !gamepad1.left_trigger_pressed) {
+                intake(intakeMotor, transferMotor, DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD, 1500, 1500);
+            } else if (gamepad1.left_trigger_pressed && !gamepad1.right_trigger_pressed) {
+                intake(intakeMotor, transferMotor, DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, 2500, 1500);
+            } else if (!gamepad1.right_trigger_pressed && !gamepad2.right_trigger_pressed) {
+                intake(intakeMotor, transferMotor, DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, 0 , 0);
             }
+
+
             if (!currentAButton && lastAButton) {
                 move_servos(flower_servos);
             }
             if (gamepad2.x) {
-                nectarFlywheel.setVelocity(2000);
+                nectarFlywheel.setVelocity(1500);
                 nectarGate.setPosition(0.5);
             } else if (!gamepad2.x) {
                 nectarFlywheel.setVelocity(0);
-                nectarGate.setPosition(0);
+                nectarGate.setPosition(1);
             }
             //h
             if (gamepad2.y) {
-                pollenFlywheel.setVelocity(2000);
+                pollenFlywheel.setVelocity(1500);
                 pollenGate.setPosition(0.5);
             } else if (!gamepad2.y) {
                 pollenFlywheel.setVelocity(0);
-                pollenGate.setPosition(0);
+                pollenGate.setPosition(1);
             }
             if (gamepad2.left_stick_y > 0 && gamepad2.left_stick_y < 1) {
                 pollenHood.setPosition(pollenHood.getPosition() + 0.05);
@@ -145,13 +146,7 @@ public class TeleOpBadWolf extends LinearOpMode {
             } else if (gamepad2.left_stick_y < 0 && gamepad2.left_stick_y > 0.5) {
                 nectarHood.setPosition(nectarHood.getPosition() - 0.005);
             }
-            if (gamepad2.right_trigger_pressed) {
-                intakeMotor.setPower(-1);
-            } else if (!gamepad2.right_trigger_pressed) {
-                if (intake_yes == false) {
-                    intakeMotor.setPower(0);
-                }
-            }
+
         }
     }
 }

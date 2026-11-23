@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class MyTeamUtil {
@@ -25,10 +27,10 @@ public class MyTeamUtil {
 
     static public void drive(double direction_x, double direction_y, double spin, List<DcMotor> wheels) {
         List<Double> powers = new ArrayList<>();
-        powers.add(direction_y - direction_x + spin);
         powers.add(direction_y + direction_x + spin);
-        powers.add(direction_y + direction_x - spin);
+        powers.add(direction_y - direction_x + spin);
         powers.add(direction_y - direction_x - spin);
+        powers.add(direction_y + direction_x - spin);
         double max = Math.max(Math.abs(powers.get(0)), Math.abs(powers.get(1)));
         max = Math.max(max, Math.abs(powers.get(2)));
         max = Math.max(max, Math.abs(powers.get(3)));
@@ -40,6 +42,13 @@ public class MyTeamUtil {
         for (int i = 0; i <= 3; i++) {
             wheels.get(i).setPower(powers.get(i));
         }
+    }
+
+    static public void intake(DcMotorEx intakeMotor, DcMotorEx transferMotor, DcMotorSimple.Direction intake_direction, DcMotorSimple.Direction transfer_direction, double intake_power, double transfer_power) {
+        intakeMotor.setDirection(intake_direction);
+        transferMotor.setDirection(transfer_direction);
+        intakeMotor.setPower(intake_power);
+        transferMotor.setVelocity(transfer_power);
     }
     /* static public void get_to_target (List<List<Double>> coordinate_list, List<DcMotor> wheels) {
         Pose robot_position = follower.pose();
@@ -69,11 +78,11 @@ public class MyTeamUtil {
     }
      */
     static public void move_servos(List<Servo> flowers) {
-        if (flowers.get(0).getPosition() == 1 && flowers.get(1).getPosition() == 1) {
+        if (flowers.get(0).getPosition() == 1 && flowers.get(1).getPosition() != 0) {
             flowers.get(0).setPosition(0);
             flowers.get(1).setPosition(0);
         }
-        else if (flowers.get(0).getPosition() == 1 && flowers.get(1).getPosition() == 0) {
+        else if (flowers.get(0).getPosition() == 1 && flowers.get(1).getPosition() != 1) {
             flowers.get(0).setPosition(1);
             flowers.get(1).setPosition(1);
         }

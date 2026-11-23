@@ -10,12 +10,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 
 public class Flywheel {
-    public DcMotorEx nectarFlywheel;
-    public DcMotorEx pollenFlywheel;
-
     //Clicks per rotation on encoder
     private double encoderCPM = 28; //change depending on motor later
-    private double gearRatio = 5; //change depending on actual gearratio for badwolf
+    private double gearRatio = 1; //change depending on actual gearratio for badwolf
 
     //velocity feed forward constant, static friction, and proportional constant
     private double kV = 0;
@@ -27,14 +24,15 @@ public class Flywheel {
 
 
     //initialize motors again
-    public void init() {
-        nectarFlywheel = hardwareMap.get(DcMotorEx.class, "flywheel_motor_nectar");
-        pollenFlywheel = hardwareMap.get(DcMotorEx.class, "flywheel_motor_pollen");
+    public DcMotorEx nectarFlywheel;
+    public DcMotorEx pollenFlywheel;
         //Because we're building custom loop, we don't want encoder.
         //This allows us to still read the motor encoder, but no run at speed it wants
-        nectarFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pollenFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public Flywheel(DcMotorEx nectarFlywheel, DcMotorEx pollenFlywheel) {
+        this.nectarFlywheel = nectarFlywheel;
+        this.pollenFlywheel = pollenFlywheel;
     }
+
 
     //tell our motors how fast to go:
     public void setMotorPower(double power, DcMotorEx motor) {
