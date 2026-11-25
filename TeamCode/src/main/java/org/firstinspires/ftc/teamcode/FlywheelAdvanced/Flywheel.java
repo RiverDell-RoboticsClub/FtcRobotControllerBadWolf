@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 
 public class Flywheel {
@@ -15,61 +18,44 @@ public class Flywheel {
     private double gearRatio = 1; //change depending on actual gearratio for badwolf
 
     //velocity feed forward constant, static friction, and proportional constant
-    private double kV = 0;
-    private double kS = 0;
-    private double kP = 0; //will tune later -> after tuning set each value equal to the tuned value
-    private double kV2 = 0;
-    private double kS2 = 0;
-    private double kP2 = 0;
 
+    public double kS = 0.066;
+    public double kV = 0.0003615;
+    public double kP = 0.00052;
 
     //initialize motors again
-    public DcMotorEx nectarFlywheel;
-    public DcMotorEx pollenFlywheel;
-        //Because we're building custom loop, we don't want encoder.
+    public DcMotorEx flywheel_motor;
+    public Servo gate;
+
+    //Because we're building custom loop, we don't want encoder.
         //This allows us to still read the motor encoder, but no run at speed it wants
-    public Flywheel(DcMotorEx nectarFlywheel, DcMotorEx pollenFlywheel) {
-        this.nectarFlywheel = nectarFlywheel;
-        this.pollenFlywheel = pollenFlywheel;
-    }
 
 
     //tell our motors how fast to go:
-    public void setMotorPower(double power, DcMotorEx motor) {
-        motor.setPower(power);
+    public double currentVelocity;
+    public double targetVelocity;
+
+    public boolean gate_open;
+
+    public void setMotorPower() {
+        double power = (this.kS * Math.signum(this.targetVelocity))
+                + (this.kV * this.targetVelocity)
+                + (this.kP * (this.targetVelocity - this.currentVelocity));
+
+        this.flywheel_motor.setPower(power);
     }
 
-    public void setMotorRPM(double targetRPM, DcMotorEx motor) {
-        double v = 0;
-        double s = 0;
-        double p = 0;
-
-        if (motor == nectarFlywheel) {
-            v = kV;
-            s = kS;
-            p = kP;
+    public void openGate(Telemetry telemetry) {
+        if (this.currentVelocity == this.targetVelocity) {
+            this.gate_open = true;
+            telemetry.addData("Current Velocity", this.currentVelocity);
+            telemetry.addData("isthegateopen", this.gate_open);
+            telemetry.update();
         }
-
-        if (motor == pollenFlywheel) {
-            v = kV2;
-            s = kS2;
-            p = kP2;
+        if (this.gate_open && this.targetVelocity != 0) {
+            this.gate.setPosition(0);
+        } else {
+            this.gate.setPosition(0.5);
         }
-        double error = targetRPM - getRPM(motor);
-        double ff = (v * targetRPM) + s; // feedforward
-        double fb = error * p;
-        double power = ff + fb;
-        setMotorPower(power, motor);
     }
-
-    //how fast we going lj;lkj;lk
-    public double getTicksPerSec(DcMotorEx motor) {
-        return motor.getVelocity();
-    }
-
-    //calculating total RPM then ticks per second
-    public double getRPM(DcMotorEx motor) {
-        return((getTicksPerSec(motor)/encoderCPM) * 60) / gearRatio; //37:50 in video
-    }
-
 }

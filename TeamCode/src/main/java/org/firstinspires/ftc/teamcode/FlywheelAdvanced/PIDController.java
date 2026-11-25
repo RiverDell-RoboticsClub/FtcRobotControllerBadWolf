@@ -21,8 +21,8 @@ public class PIDController {
         this.prev_error = 0.0;
     }
 
-    public double update(double setpoint, double measurement) {
-        double error = setpoint - measurement;
+    public double update(double targetVelocity, double currentVelocity) {
+        double error = targetVelocity - currentVelocity;
 
         double p_term = this.kp * error;
 
